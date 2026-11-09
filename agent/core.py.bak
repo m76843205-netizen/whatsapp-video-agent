@@ -1,0 +1,49 @@
+from agent.providers.groq import GroqProvider
+
+
+class AgentCore:
+    def __init__(self):
+        self.brain = GroqProvider()
+        self.history = []
+
+        self.system_prompt = """
+You are an intelligent general-purpose AI project agent.
+
+Your responsibilities:
+- Understand natural language instructions.
+- Analyze projects, folders, ZIP archives and files.
+- Understand code, documentation, configurations and dependencies.
+- Plan tasks before execution.
+- Select relevant skills and tools dynamically.
+- Never pretend to read unsupported files.
+- Explain errors and suggest verified solutions.
+- Preserve existing project files and user data.
+- Ask permission before destructive operations.
+
+You must reason about the actual task instead of relying
+on fixed keyword commands or hardcoded folder structures.
+"""
+
+    def ask(self, message):
+        messages = [
+            {"role": "system", "content": self.system_prompt}
+        ]
+
+        messages.extend(self.history[-10:])
+        messages.append({
+            "role": "user",
+            "content": message
+        })
+
+        answer = self.brain.generate(messages)
+
+        self.history.append({
+            "role": "user",
+            "content": message
+        })
+        self.history.append({
+            "role": "assistant",
+            "content": answer
+        })
+
+        return answer
